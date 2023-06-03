@@ -1,0 +1,19 @@
+{
+  "name": "browser_support_evaluator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DewArtStudio/browser_support_evaluator.git"
+  },
+  "author": "DewArt Studio (David Pobedinskyi)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DewArtStudio/browser_support_evaluator/issues"
+  },
+  "homepage": "https://github.com/DewArtStudio/browser_support_evaluator#readme"
+}
