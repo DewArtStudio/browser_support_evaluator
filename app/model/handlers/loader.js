@@ -14,8 +14,10 @@ export default class Loader {
             let res = await axios.get(url);
             data.status = res.status;
             data.data = res.data;
+            data.loaded = true;
         } catch {
             data.status = 404;
+            data.loaded = false;
         }
         return data;
     }

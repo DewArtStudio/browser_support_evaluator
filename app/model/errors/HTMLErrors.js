@@ -1,14 +1,15 @@
 function getSelector(node) {
     let arr = [];
     while (node !== undefined) {
-        arr.push(node.tag.name);
+        arr.push(node.node);
         node = node.parent;
     }
-    let len = res.length - 1;
+    let i = arr.length - 1;
     let res = "Selector: ";
-    for (let i = 0; i < len; i++) {
-        res += node.tag.name + " > ";
-    }
+    do {
+        res += arr[i] + " > ";
+    } while (i--);
+    res += "#";
     return res;
 }
 const HTMLErrors = {

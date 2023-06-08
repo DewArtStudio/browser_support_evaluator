@@ -24,8 +24,6 @@ export default class Node {
                 this.type = NODE_TYPES.DOCTYPE;
                 break;
             case "#comment":
-                this.type = NODE_TYPES.COMMENT;
-                console.log("/КОММЕНТАРИЙ/" + node);
                 return;
             default:
                 this.type = NODE_TYPES.NODE;
@@ -56,6 +54,9 @@ export default class Node {
             switch (keys[i]) {
                 case "tagName":
                     this.tag = getTag(data);
+                    break;
+                case "nodeName":
+                    this.node = data;
                     break;
                 case "attrs":
                     let len = data.length;

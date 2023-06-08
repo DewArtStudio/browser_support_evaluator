@@ -1,7 +1,10 @@
 import Tree from "./Tree.js";
 import Node from "../Node.js";
+import Loader from "../handlers/loader.js";
+import { parse } from "parse5";
 import HTMLErrors from "../../errors/HTMLErrors.js";
 import NODE_TYPES from "../../enums/node-types.js";
+
 /**
  * Представление DOM дерева
  */
@@ -19,8 +22,25 @@ export default class DOM extends Tree {
      * Инициализирует DOM дерево
      * @param {Node} root
      */
-    constructor(root) {
+    constructor(document) {
+         let cur = parse(document);
+         let root = new Node(cur);
+         let stack = [];
+         stack.push(...cur.childNodes.slice(1).reverse());
+         cur = cur.childNodes[0];
+         while (true) {
+             new Node(cur);
+             const children = cur.childNodes;
+             if (children !== undefined && children.length > 0) {
+                 cur = children[0];
+                 stack.push(...children.slice(1).reverse());
+             } else {
+                 if (!!stack.length) cur = stack.pop();
+                 else break;
+             }
+         }
         super(root);
+
         let iterator = root.getDeepIterator();
         while (iterator.hasMore()) {
             let node = iterator.getNext();
@@ -62,23 +82,28 @@ export default class DOM extends Tree {
                         break;
 
                     case "link":
-                        if (node.attributes !== undefined) {
-                            let attr = node.attributes.get("href");
-                            if (attr !== "" || attr !== undefined) {
-                                this.styles.push({ type: "url", value: attr });
-                            } else {
-                                this.errors.push(HTMLErrors.MISSING_STYLE(node));
+                        {
+                            if (node.attributes !== undefined) {
+                                let href = node.attributes.get("href");
+                                let rel = node.attributes.get("rel");
+                                if (href === undefined || href.value === "") {
+                                    this.errors.push(HTMLErrors.MISSING_STYLE(node));
+                                } else {
+                                    if (rel === undefined || rel.value === "") {
+                                        this.errors.push(HTMLErrors.MISSING_STYLE(node));
+                                    } else {
+                                        if (rel.value === "stylesheet")
+                                            this.styles.push({ type: "url", node: node, value: href.value });
+                                    }
+                                }
                             }
                         }
 
                         break;
 
                     case "style":
-                        if (node.children.length === 1) {
-                            this.styles.push({ type: "text", value: node.children[0].text });
-                        } else {
-                            this.errors.push(HTMLErrors.STYLE_SYNTAX_ERROR);
-                        }
+                        for (let i = 0; i < node.children.length; i++)
+                            this.styles.push({ type: "text", node: node, value: node.children[i].text });
                         break;
 
                     case "script":
