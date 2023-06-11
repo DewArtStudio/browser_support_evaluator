@@ -1,5 +1,5 @@
 import URL from "../handlers/url.js";
-import Loader from "../handlers/loader.js";
+import Loader from "../utilities/loader.js";
 
 /**
  * Производит парсинг стилей CSS

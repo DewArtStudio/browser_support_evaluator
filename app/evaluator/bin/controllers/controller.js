@@ -11,6 +11,7 @@ import READY_STATUS from "../enums/ready-status.js";
 const HTTP_PORT = process.env.HTTP_PORT || 80;
 const HTTPS_PORT = process.env.HTTPS_PORT || 443;
 const EVALUATION_REQUEST = process.env.EVALUATION_REQUEST || "/evaluation";
+
 const app = express();
 const isReady = { status: READY_STATUS.WAITING };
 app.use(
@@ -41,9 +42,10 @@ export default function controller() {
                 res.send(JSON.stringify(supportAssessment));
             });
             isReady.status = READY_STATUS.READY;
+            console.log(`| SERVICE READY TO GO |`);
         },
         () => {
-            console.log(`ERROR! Module not ready`);
+            console.log(`| MODULES RETURNED AN ERROR |`);
             isReady.status = READY_STATUS.ERROR;
         }
     );

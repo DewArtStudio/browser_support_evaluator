@@ -1,109 +1,165 @@
 import { createClient } from "redis";
 import process from "process";
+import asyncModules from "../../controllers/control-data/list-async-modules.js";
 import READY_STATUS from "../../enums/ready-status.js";
-console.log(123);
-const components = {
+
+/**
+ * Информация о браузерных компонентах
+ */
+class ComponentsInfo {
     /**
+     * Состояние готовности компонента
+     * @type {READY_STATUS}
+     */
+    isReady;
+    /**
+     * Информация о HTML компонентах
+     * @type {{element: Map.<string, any>, manifest: Map.<string, any>}}
+     */
+    html = {
+        element: new Map(),
+        manifest: new Map(),
+    };
+    /**
+     * Информация о CSS компонентах
+     * @type {{property: Map.<string, any>, directive: Map.<string, any>, selector: Map.<string, any>, type: Map.<string, any>}}
+     */
+    css = {
+        property: new Map(),
+        directive: new Map(),
+        selector: new Map(),
+        type: new Map(),
+    };
+    /**
+     * Информация о SVG компонентах
+     * @type {{element: Map.<string, any>, attribute: Map.<string, any>}}
+     */
+    svg = {
+        element: new Map(),
+        attribute: new Map(),
+    };
+    /**
+     * Информация о браузерах
+     * @type {Map.<string, any>}}
+     */
+    browser = new Map();
+    /**
+     * Иницилализирует объект
+     */
+    constructor() {
+        this.isReady = READY_STATUS.WAITING;
+        return;
+    }
+    static singleton;
+    /**
+     * Полная инициализация объекта
+     * @returns
      * @private
      */
-    isReady: READY_STATUS.WAITING,
-    getProperty: (key) => undefined,
-    getSelector: (key) => undefined,
-    getDirective: (key) => undefined,
-    getType: (key) => undefined,
-    getElement: (key) => undefined,
-    getGlobalAttribute: (key) => undefined,
-    getManifest: (key) => undefined,
-};
-// Получение переменных окружения
-const HOST_NAME = process.env.CACHE_DB_HOST;
-const PASSWORD = process.env.CACHE_DB_PASSWORD;
-const PORT = process.env.CACHE_DB_PORT || 6379;
-// Подключение к Redis
+    async _init() {
+        /**
+         * Инициализирует данные о веб-компонентах
+         * @param {string} prefix префикс данных
+         * @param {Array<string>} keys ключи данных
+         * @param {Object} save объект записи
+         * @param {String} saveKey ключ объекта записи
+         * @returns {Promise} возвращает статус ошибки, если данные не найдены
+         */
+        async function initializeComponents(prefix, keys, save, saveKey) {
+            let i = keys.length - 1;
+            const mapElements = new Map();
+            do {
+                const key = prefix + keys[i];
+                let element = await redis.get(key);
+                if (element === null) {
+                    console.log(`| Empty anser for ${key} |`);
+                    return this.isReady === READY_STATUS.ERROR;
+                }
+                element = JSON.parse(element);
+                mapElements.set(keys[i], element);
+            } while (i--);
+            save[saveKey] = mapElements;
+        }
+        /**
+         * Инициализирует данные о html-компонентах
+         * @param {string} prefix префикс данных
+         * @param {Array<string>} keys ключи данных
+         * @param {Object} save объект записи
+         * @param {String} saveKey ключ объекта записи
+         * @returns {Promise} возвращает статус ошибки, если данные не найдены
+         */
+        async function initializeHtmlElements(prefix, keys, save, saveKey) {
+            let i = keys.length - 1;
+            const mapElements = new Map();
+            do {
+                const key = prefix + keys[i];
+                let element = await redis.get(key);
+                if (element === null) {
+                    console.log(`| Empty anser for ${key} |`);
+                    return this.isReady === READY_STATUS.ERROR;
+                }
+                element = JSON.parse(element);
+                let j = element.attributes.length - 1;
+                const attributesMap = new Map();
+                do {
+                    const attribute = element.attributes[j];
+                    attributesMap.set(attribute.key, attribute.value);
+                } while (j--);
+                element.attributes = attributesMap;
+                mapElements.set(keys[i], element);
+            } while (i--);
+            save[saveKey] = mapElements;
+        }
+        const data = {
+            htmlElementKeys: await redis.get("#html-element"),
+            htmlManifestKeys: await redis.get("#html-manifest"),
+            cssPropertyKeys: await redis.get("#css-property"),
+            cssDirectiveKeys: await redis.get("#css-directive"),
+            cssSelectorKeys: await redis.get("#css-selector"),
+            cssTypesKeys: await redis.get("#css-type"),
+            svgElementKeys: await redis.get("#svg-element"),
+            svgAttributeKeys: await redis.get("#svg-attribute"),
+            browsers: await redis.get("#browser"),
+        };
+
+        let keys = Object.keys(data);
+        let i = keys.length - 1;
+        do {
+            if (data[keys[i]] === null) {
+                console.log(`| Empty anser for ${keys[i]} |`);
+                return (this.isReady = READY_STATUS.ERROR);
+            } else {
+                data[keys[i]] = JSON.parse(data[keys[i]]);
+            }
+        } while (i--);
+        if (!!(await initializeHtmlElements("html-element-", data.htmlElementKeys, this.html, "element"))) return;
+        if (!!(await initializeComponents("html-manifest-", data.htmlManifestKeys, this.html, "manifest"))) return;
+        if (!!(await initializeComponents("css-property-", data.cssPropertyKeys, this.css, "property"))) return;
+        if (!!(await initializeComponents("css-directive-", data.cssDirectiveKeys, this.css, "directive"))) return;
+        if (!!(await initializeComponents("css-selector-", data.cssSelectorKeys, this.css, "selector"))) return;
+        if (!!(await initializeComponents("css-type-", data.cssTypesKeys, this.css, "type"))) return;
+        if (!!(await initializeComponents("svg-element-", data.svgElementKeys, this.svg, "element"))) return;
+        if (!!(await initializeComponents("svg-attribute-", data.svgAttributeKeys, this.svg, "attribute"))) return;
+        if (!!(await initializeComponents("browser-", data.browsers, this, "browser"))) return;
+        this.isReady = READY_STATUS.READY;
+    }
+}
+
+const component = new ComponentsInfo();
+asyncModules.push(component);
+const HOST_NAME = process.env.COMPONENT_DB_HOST;
+const PASSWORD = process.env.COMPONENT_DB_PASSWORD;
+const PORT = process.env.COMPONENT_DB_PORT || 6379;
 const redis = createClient({
     url: `redis://default:${PASSWORD}@${HOST_NAME}:${PORT}`,
 });
-await redis.connect();
 redis.on("error", async () => {
-    components.isReady = READY_STATUS.ERROR;
+    component.isReady = READY_STATUS.ERROR;
     console.log("| REDIS CONNECT ERROR |");
 });
+redis.on("ready", async () => {
+    await component._init(redis);
+});
+await redis.connect();
 
-async function get(key) {
-    const res = await redis.get(key);
-    return res !== null ? JSON.parse(res) : undefined;
-}
-
-async function getData() {
-    const typeKeys = await get("#tech");
-}
-
-class Components {
-    initialized = false;
-    async init() {
-        if (typeKeys === undefined) return;
-        let i = typeKeys.length - 1;
-        do {
-            const typeKey = typeKeys[i];
-            const type = (this[typeKey.replace(/#/g, "")] = {});
-            const categories = await get(typeKey);
-            if (categories === undefined) {
-                return;
-            }
-            let j = categories.length - 1;
-            do {
-                const categoryKey = categories[j];
-                type[categoryKey] = new Map();
-
-                const componentKeys = await get(`${typeKey}-${categoryKey}`);
-                if (componentKeys === undefined) return;
-                let k = componentKeys.length - 1;
-                do {
-                    const componentKey = `${categoryKey}-${componentKeys[k]}`;
-
-                    const component = await get(componentKey);
-                    if (component === undefined) return;
-                    type[categoryKey].set(componentKeys[k], component);
-                } while (k--);
-            } while (j--);
-        } while (i--);
-        this.initialized = true;
-    }
-}
-
-const componentsBase = new Components();
-await componentsBase.init();
-if (components.isReady !== READY_STATUS.ERROR) {
-    if (componentsBase.initialized) {
-        componentsBuild();
-    } else {
-        let counter = 0;
-        let initInterval = setInterval(async () => {
-            if (counter > 30) {
-                components.isReady = READY_STATUS.ERROR;
-            }
-            await componentsBase.init();
-            if (componentsBase.initialized) {
-                componentsBuild();
-                clearInterval(initInterval);
-            }
-            counter++;
-        }, 5000);
-    }
-}
-
-function componentsBuild() {
-    setInterval(() => {
-        componentsBase.init();
-    }, 43200000);
-    components.getProperty = (key) => componentsBase.css.properties.get(key);
-    components.getSelector = (key) => componentsBase.css.selectors.get(key);
-    components.getDirective = (key) => componentsBase.css["at-rules"].get(key);
-    components.getType = (key) => componentsBase.css.types.get(key);
-    components.getElement = (key) => componentsBase.html.elements.get(key);
-    components.getGlobalAttribute = (key) => componentsBase.html.global_attributes.get(key);
-    components.getManifest = (key) => componentsBase.html.manifest.get(key);
-    components.isReady = READY_STATUS.READY;
-}
-
-export default components;
+export default component;
