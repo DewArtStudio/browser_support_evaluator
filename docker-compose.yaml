@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+    # ВРЕМЕННЫЙ ВЕБ-СЕРВЕР (+)
+    web-server:
+        container_name: web-server
+        build:
+            context: ./app/web-server
+            dockerfile: Dockerfile
+            args:
+                - NGINX_VERSION=1.24.0
+        ports:
+            - 80:80
+            - 443:443
+        restart: always
+        networks:
+            - app
+
+    # БАЗА ДАННЫХ ИНФОРМАЦИИ О ПОДДЕРЖКИ (+)
+    component-db:
+        container_name: ${COMPONENT_DB_CONTAINER_NAME}
+        build:
+            context: ./app/${COMPONENT_DB_CONTAINER_NAME}
+            dockerfile: Dockerfile
+            args:
+                - PASSWORD=${COMPONENT_DB_PASSWORD}
+        restart: always
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 300M
+                reservations:
+                    cpus: "0.25"
+                    memory: 100M
+        volumes:
+            - ./volumes/${COMPONENT_DB_CONTAINER_NAME}:/data
+        networks:
+            - app
+
+    # ПОЛУЧЕНИЕ ДАННЫХ О БРАУЗЕРНОЙ ПОДДЕРЖКИ (+)
+    component-handler:
+        container_name: ${COMPONENT_HANDLER_CONTAINER_NAME}
+        build:
+            context: ./app/${COMPONENT_HANDLER_CONTAINER_NAME}
+            dockerfile: Dockerfile
+            args:
+                - RUN_MODE=${COMPONENT_HANDLER_RUN_MODE}
+        environment:
+            - COMPONENT_DB_HOST=${COMPONENT_DB_CONTAINER_NAME}
+            - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}
+            - COMPONENT_DB_PORT=${COMPONENT_DB_PORT}
+        restart: always
+        volumes:
+            - ./app/${COMPONENT_HANDLER_CONTAINER_NAME}/bin:/app/handler/bin
+        depends_on:
+            - ${COMPONENT_DB_CONTAINER_NAME}
+        networks:
+            - app
+
+    # КОНТЕЙНЕР ОБРАБОТЧИКА (+)
+    evaluator_1:
+        container_name: ${EVALUATOR_CONTAINER_NAME}-node-1
+        build:
+            context: ./app/${EVALUATOR_CONTAINER_NAME}
+            dockerfile: Dockerfile
+            args:
+                - RUN_MODE=${EVALUATOR_RUN_MODE}
+                - HTTP_PORT=${EVALUATOR_HTTP_PORT}
+                - HTTPS_PORT=${EVALUATOR_HTTPS_PORT}
+        restart: always
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.25"
+                    memory: "200M"
+        environment:
+            - COMPONENT_DB_HOST=${COMPONENT_DB_CONTAINER_NAME}
+            - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}
+            - COMPONENT_DB_PORT=${COMPONENT_DB_PORT}
+            - EVALUATION_REQUEST=${EVALUATION_REQUEST}
+            - HTTP_PORT=${EVALUATOR_HTTP_PORT}
+            - HTTPS_PORT=${EVALUATOR_HTTPS_PORT}
+        volumes:
+            - ./app/${EVALUATOR_CONTAINER_NAME}/bin:/app/bin
+        ports:
+            - 50080:80
+            - 50443:443
+        depends_on:
+            - ${COMPONENT_HANDLER_CONTAINER_NAME}
+            - ${COMPONENT_DB_CONTAINER_NAME}
+        networks:
+            - app
+
+networks:
+    app:
+        driver: bridge
+    
+
+
