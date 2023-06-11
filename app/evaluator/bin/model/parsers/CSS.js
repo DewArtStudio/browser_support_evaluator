@@ -1,4 +1,4 @@
-import URL from "../handlers/url.js";
+import URL from "../utilities/url.js";
 import Loader from "../utilities/loader.js";
 
 /**

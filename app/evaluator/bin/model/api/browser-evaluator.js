@@ -1,6 +1,6 @@
 // Загрузка файлов
 import Loader from "../utilities/loader.js";
-import URL from "../handlers/url.js";
+import URL from "../utilities/url.js";
 // Парсеры
 import HTMLParser from "../parsers/HTML.js";
 import CSSParser from "../parsers/CSS.js";
@@ -11,7 +11,7 @@ import Render from "../components/trees/render.js";
 // Обработчики деревьев
 import DOMHandler from "../handlers/dom.js";
 // Перечисления
-import DEVICES_PARAMS from "../data/devices-params.js";
+import DEVICES_PARAMS from "../../data/devices-params.js";
 import STATUS from "../../enums/response-status.js";
 
 /**

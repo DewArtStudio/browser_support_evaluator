@@ -1,4 +1,4 @@
-import ORIENTATION from "../../enums/orientation.js";
+import ORIENTATION from "../enums/orientation.js";
 /*
     ПАТТЕРН ДЛЯ ЗАПИСИ
     Ширина экрана при стандартном положении

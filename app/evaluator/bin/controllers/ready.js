@@ -1,5 +1,5 @@
 import READY_STATUS from "../enums/ready-status.js";
-import asyncModules from "./control-data/list-async-modules.js";
+import asyncModules from "./data/list-async-modules.js";
 /**
  * Выполняет callback функцию, когда компоненты готовы к работе
  * @param {Function} callback выполняется, когда все модули готовы к работе
@@ -9,7 +9,7 @@ export default function ready(callback, error) {
     if (!asyncModules.length) callback();
     else {
         let res = checkModule();
-        
+
         if (res === READY_STATUS.WAITING) {
             const readyInterval = setInterval(() => {
                 let res = checkModule();

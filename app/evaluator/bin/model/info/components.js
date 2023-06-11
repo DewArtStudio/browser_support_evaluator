@@ -1,6 +1,6 @@
 import { createClient } from "redis";
 import process from "process";
-import asyncModules from "../../controllers/control-data/list-async-modules.js";
+import asyncModules from "../../controllers/data/list-async-modules.js";
 import READY_STATUS from "../../enums/ready-status.js";
 
 /**
