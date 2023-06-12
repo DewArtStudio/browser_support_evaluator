@@ -1,118 +1,82 @@
-import NODE_TYPES from "../../../../enums/node-types.js";
 import DeepIterator from "../iterators/DeepIterator.js";
 import BreadthIterator from "../iterators/BreadthIterator.js";
+import ELEMENT_TYPES from "../../../../enums/element-types.js";
 /**
  * Узел DOM дерева
  */
 export default class Node {
+    tag = {};
+    attributes = new Map();
+    dataAttributes = new Map();
     /**
      * Создаёт узел DOM дерева
-     * @param {NODE_TYPES} type
-     * @param {*} data
-     * @param {*} node
+     * @param {Object} type
      */
     constructor(node) {
         switch (node.nodeName) {
             case "#text":
-                this.type = NODE_TYPES.TEXT;
-                this.text = node.value;
-                break;
-            case "#document":
-                this.type = NODE_TYPES.DOCUMENT;
-                break;
-            case "#documentType":
-                this.type = NODE_TYPES.DOCTYPE;
+                this.type = ELEMENT_TYPES.TEXT;
+                this.value = node.value;
                 break;
             case "#comment":
-                return;
+                this.type = ELEMENT_TYPES.COMMENT;
+                this.value = node.data;
+                break;
+            case "#document":
+                this.type = ELEMENT_TYPES.DOCUMENT;
+                this.mode = node.mode;
+                break;
+            case "#documentType":
+                this.type = ELEMENT_TYPES.DOCTYPE;
+                this.doctype = node.name;
+                break;
             default:
-                this.type = NODE_TYPES.NODE;
+                this.type = ELEMENT_TYPES.TAG;
+                this.tag.name = node.tagName;
+                if (node.attrs !== undefined) {
+                    node.attrs.forEach((e) => {
+                        if (/^data/gi.test(e.name)) {
+                            this.dataAttributes.set(e.name, { value: e.value });
+                        } else {
+                            this.attributes.set(e.name, { value: e.value });
+                        }
+                    });
+                }
                 break;
         }
-        this._parseNode(node);
-        if (node.pseudoNode === undefined) node.pseudoNode = this;
 
+        if (node.pseudoNode === undefined) node.pseudoNode = this;
         if (node.parentNode !== undefined) {
             this.parent = node.parentNode.pseudoNode;
             if (node.parentNode.pseudoNode.children === undefined) node.parentNode.pseudoNode.children = [];
             node.parentNode.pseudoNode.children.push(this);
         }
     }
-
     /**
-     * @type {NODE_TYPES}
+     * Производит обход всего поддерева
+     * @param {Function} handler
+     * @param {String} algorithm алгоритм обхода (deep | breadth) (default: 'deep')
+     * @param {{value: Boolean}} signal сигнал остановки процесса обхода
      */
-    type;
-    styles = [];
-    inlineStyles = [];
-    class = [];
-    attributes = new Map();
-    dataAttributes = [];
-
-    _parseNode(node) {
-        let keys = Object.keys(node);
-        let i = keys.length + 1;
-        do {
-            let data = node[keys[i]];
-            switch (keys[i]) {
-                case "tagName":
-                    this.tag = { name: data };
-                    break;
-                case "nodeName":
-                    this.node = data;
-                    break;
-                case "attrs":
-                    let len = data.length;
-                    for (let j = 0; j < len; j++) {
-                        let attr = data[j];
-                        switch (attr.name) {
-                            case "id":
-                                this.id = attr.value;
-                                break;
-                            case "class":
-                                this.class.push(...attr.value.split(" "));
-                                break;
-                            case "style":
-                                this.inlineStyles.push(getProperties(attr.value));
-                                break;
-                            default:
-                                if (/^data\-/gi.test(attr.name)) {
-                                    this.dataAttributes.push(attr);
-                                } else {
-                                    this.attributes.set(attr.name, getAttribute(attr.name, attr.value));
-                                }
-                                break;
-                        }
-                    }
-                    break;
+    forEach(handler, algorithm = "deep", signal = undefined) {
+        let iterator;
+        if (algorithm === "deep") iterator = new DeepIterator(this);
+        else if (algorithm === "breadth") iterator = new BreadthIterator(this);
+        else throw new Error("Указан неверный алгоритм обхода");
+        if (signal !== undefined)
+            while (iterator.hasMore() && signal.value) {
+                handler(iterator.getNext());
             }
-        } while (i--);
+        else {
+            while (iterator.hasMore()) {
+                handler(iterator.getNext());
+            }
+        }
     }
-    /**
-     * Возвращает итератор в глубину по поддереву текущего узла
-     * @returns {DeepIterator}
-     */
-    getDeepIterator() {
-        return new DeepIterator(this);
-    }
-    /**
-     * Возвращает итератор в ширину по поддереву текущего узла
-     * @returns {BreadthIterator}
-     */
-    getBreadthIterator() {
-        return new BreadthIterator(this);
-    }
-}
 
-function getAttribute(name, value) {
-    return { name, value, support: {} };
-}
-function getProperties(style) {
-    let properties = style.split(";");
-    let res = new Map();
-    for (let i = 0; i < properties.length; i++) {
-        let data = properties[i].split(":");
-        res.set(data[0], {});
+
+
+    clone() {
+        
     }
-    return res;
 }

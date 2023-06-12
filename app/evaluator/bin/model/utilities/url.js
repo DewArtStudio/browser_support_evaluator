@@ -40,7 +40,7 @@ export default class URL {
             domain +
             "/" +
             pathSplit.join("/") +
-            (httpData !== "" ? "?" : "") +
+            (httpData !== "" ? "/?" : "") +
             httpData;
         isAbsolute = protocol.length > 0 && domain.length > 0;
         if (!isAbsolute)
@@ -66,13 +66,24 @@ export default class URL {
         if (currentUrl !== undefined) {
             if (!currentUrl.isParse) currentUrl = URL.parse(currentUrl);
         } else throw Error("URL текущей страницы не задан");
-        let bias = currentUrl.pathSplit.length - Math.min(currentUrl.pathSplit.length, relativeUrl.backCount);
-        return (
-            currentUrl.protocol +
-            "://" +
-            currentUrl.domain +
-            currentUrl.pathSplit.slice(0, bias).join("/") +
-            relativeUrl.url
-        );
+        relativeUrl = URL.parse(relativeUrl);
+        if (relativeUrl.isAbsolute) {
+            return relativeUrl;
+        } else {
+            let res = "";
+            if (relativeUrl.backCount > 0) {
+                let bias = currentUrl.pathSplit.length - Math.min(currentUrl.pathSplit.length, relativeUrl.backCount);
+                res +=
+                    currentUrl.protocol +
+                    "://" +
+                    currentUrl.domain +
+                    "/" +
+                    currentUrl.pathSplit.slice(0, bias).join("/") +
+                    relativeUrl.url;
+            } else {
+                res += currentUrl.protocol + "://" + currentUrl.domain + relativeUrl.url;
+            }
+            return URL.parse(res);
+        }
     }
 }

@@ -36,7 +36,6 @@ class ComponentsInfo {
      */
     svg = {
         element: new Map(),
-        attribute: new Map(),
     };
     /**
      * Информация о браузерах
@@ -100,12 +99,15 @@ class ComponentsInfo {
                 }
                 element = JSON.parse(element);
                 let j = element.attributes.length - 1;
-                const attributesMap = new Map();
-                do {
-                    const attribute = element.attributes[j];
-                    attributesMap.set(attribute.key, attribute.value);
-                } while (j--);
-                element.attributes = attributesMap;
+                if (j >= 0) {
+                    const attributesMap = new Map();
+                    do {
+                        const attribute = element.attributes[j];
+                        attributesMap.set(attribute.key, attribute.value);
+                    } while (j--);
+                    element.attributes = attributesMap;
+                }
+
                 mapElements.set(keys[i], element);
             } while (i--);
             save[saveKey] = mapElements;
@@ -118,10 +120,8 @@ class ComponentsInfo {
             cssSelectorKeys: await redis.get("#css-selector"),
             cssTypesKeys: await redis.get("#css-type"),
             svgElementKeys: await redis.get("#svg-element"),
-            svgAttributeKeys: await redis.get("#svg-attribute"),
             browsers: await redis.get("#browser"),
         };
-
         let keys = Object.keys(data);
         let i = keys.length - 1;
         do {
@@ -138,8 +138,7 @@ class ComponentsInfo {
         if (!!(await initializeComponents("css-directive-", data.cssDirectiveKeys, this.css, "directive"))) return;
         if (!!(await initializeComponents("css-selector-", data.cssSelectorKeys, this.css, "selector"))) return;
         if (!!(await initializeComponents("css-type-", data.cssTypesKeys, this.css, "type"))) return;
-        if (!!(await initializeComponents("svg-element-", data.svgElementKeys, this.svg, "element"))) return;
-        if (!!(await initializeComponents("svg-attribute-", data.svgAttributeKeys, this.svg, "attribute"))) return;
+        if (!!(await initializeHtmlElements("svg-element-", data.svgElementKeys, this.svg, "element"))) return;
         if (!!(await initializeComponents("browser-", data.browsers, this, "browser"))) return;
         this.isReady = READY_STATUS.READY;
     }

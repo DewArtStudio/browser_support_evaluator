@@ -19,6 +19,7 @@ services:
     # БАЗА ДАННЫХ ИНФОРМАЦИИ О ПОДДЕРЖКИ (+)
     component-db:
         container_name: ${COMPONENT_DB_CONTAINER_NAME}
+        hostname: ${COMPONENT_DB_HOST}
         build:
             context: ./app/${COMPONENT_DB_CONTAINER_NAME}
             dockerfile: Dockerfile
@@ -47,7 +48,7 @@ services:
             args:
                 - RUN_MODE=${COMPONENT_HANDLER_RUN_MODE}
         environment:
-            - COMPONENT_DB_HOST=${COMPONENT_DB_CONTAINER_NAME}
+            - COMPONENT_DB_HOST=${COMPONENT_DB_HOST}
             - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}
             - COMPONENT_DB_PORT=${COMPONENT_DB_PORT}
         restart: always
@@ -59,8 +60,9 @@ services:
             - app
 
     # КОНТЕЙНЕР ОБРАБОТЧИКА (+)
-    evaluator_1:
-        container_name: ${EVALUATOR_CONTAINER_NAME}-node-1
+    evaluator:
+        container_name: ${EVALUATOR_CONTAINER_NAME}
+        hostname: ${EVALUATOR_CONTAINER_NAME}
         build:
             context: ./app/${EVALUATOR_CONTAINER_NAME}
             dockerfile: Dockerfile
@@ -69,13 +71,13 @@ services:
                 - HTTP_PORT=${EVALUATOR_HTTP_PORT}
                 - HTTPS_PORT=${EVALUATOR_HTTPS_PORT}
         restart: always
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: "200M"
+        # deploy:
+        #     resources:
+        #         limits:
+        #             cpus: "0.25"
+        #             memory: "200M"
         environment:
-            - COMPONENT_DB_HOST=${COMPONENT_DB_CONTAINER_NAME}
+            - COMPONENT_DB_HOST=${COMPONENT_DB_HOST}
             - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}
             - COMPONENT_DB_PORT=${COMPONENT_DB_PORT}
             - EVALUATION_REQUEST=${EVALUATION_REQUEST}
@@ -84,8 +86,8 @@ services:
         volumes:
             - ./app/${EVALUATOR_CONTAINER_NAME}/bin:/app/bin
         ports:
-            - 50080:80
-            - 50443:443
+            - 50080:${EVALUATOR_HTTP_PORT}
+            - 50443:${EVALUATOR_HTTPS_PORT}
         depends_on:
             - ${COMPONENT_HANDLER_CONTAINER_NAME}
             - ${COMPONENT_DB_CONTAINER_NAME}
@@ -95,6 +97,3 @@ services:
 networks:
     app:
         driver: bridge
-    
-
-

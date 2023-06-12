@@ -23,11 +23,13 @@ export default class Tree {
     getRoot() {
         return this.root;
     }
-    getDeepIterator() {
-        return this.root.getDeepIterator();
-    }
-
-    getBreadthIterator() {
-        return this.root.getBreadthIterator();
+    /**
+     * Производит обход всего дерева
+     * @param {Function} handler
+     * @param {String} algorithm алгоритм обхода (deep | breadth) (default: 'deep')
+     * @param {{value: Boolean}} signal сигнал остановки процесса обхода
+     */
+    forEach(handler, algorithm = "deep", signal = undefined) {
+        this.root.forEach(handler, algorithm, signal);
     }
 }

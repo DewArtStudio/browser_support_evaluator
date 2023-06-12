@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import UserAgent from "user-agents";
 /**
  * Класс загрузчика, инкапсулирует проверки связанные с загрузкой документов
  */
@@ -11,11 +11,16 @@ export default class Loader {
     static async get(url) {
         const data = { status: -1 };
         try {
-            let res = await axios.get(url);
+            let res = await axios.get(url, {
+                headers: {
+                    "User-Agent": new UserAgent().toString(),
+                },
+            });
             data.status = res.status;
             data.data = res.data;
             data.loaded = true;
-        } catch {
+        } catch (e) {
+            
             data.status = 404;
             data.loaded = false;
         }

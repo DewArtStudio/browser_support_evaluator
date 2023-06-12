@@ -23,7 +23,7 @@ export default async function main() {
 
     const support = JSON.parse(fs.readFileSync("/app/browser-compat-data/build/data.json").toString());
     const cssData = JSON.parse(fs.readFileSync("/app/data/css/properties.json").toString());
-    
+
     // ==============
     // HTML
     // ==============
@@ -46,8 +46,9 @@ export default async function main() {
     // SVG
     // ==============
     const svg = extractSVG(support.svg); // {elements, attributes}
-    writeSupport("svg", "element", svg.elements);
-    writeSupport("svg", "attribute", svg.attributes);
+    // svg.elements.forEach((e) => e.value.attributes !== undefined && e.value.attributes.forEach((a) => console.log(a)));
+    // console.log();
+    writeSupport("svg", "element", svg);
     await redis.set("#svg", JSON.stringify(["element", "attribute"]));
 
     // ==============
@@ -159,13 +160,13 @@ function extractCSS(css) {
 }
 
 function extractSVG(svg) {
-    function extractElements(elements) {
+    function extractElements(elements, attributes) {
         const res = [];
         const elementKeys = Object.keys(elements);
         let i = elementKeys.length - 1;
         do {
             const elementKey = elementKeys[i];
-            const element = { key: elementKey, value: { attributes: [] } };
+            const element = { key: elementKey, value: { attributes: attributes } };
             const elementData = elements[elementKey];
             const keys = Object.keys(elementData);
             let j = keys.length - 1;
@@ -173,10 +174,13 @@ function extractSVG(svg) {
                 const key = keys[j];
                 if (key === compat) {
                     element.value.status = elementData[key].status;
-                    element.value.support = elementData[key].status;
+                    element.value.support = elementData[key].support;
                 } else {
-                    const attribute = elementData[key];
-                    element.value.attributes.push({ status: attribute.status, support: attribute.support });
+                    const attribute = elementData[key][compat];
+                    element.value.attributes.push({
+                        key,
+                        value: { status: attribute.status, support: attribute.support },
+                    });
                 }
             } while (j--);
             res.push(element);
@@ -191,7 +195,7 @@ function extractSVG(svg) {
             const categoryKey = categoryKeys[i];
             const category = attributes[categoryKey];
             const data = category[compat];
-            if (category[compat] !== undefined) {
+            if (data !== undefined) {
                 res.push({ key: categoryKey, value: { status: data.status, support: data.support } });
             } else {
                 const attributeKeys = Object.keys(category);
@@ -202,7 +206,7 @@ function extractSVG(svg) {
                     if (attribute[compat] !== undefined) {
                         res.push({
                             key: attributeKey,
-                            value: { status: attribute.status, support: attribute.support },
+                            value: { status: attribute[compat].status, support: attribute[compat].support },
                         });
                     } else {
                         const keys = Object.keys(attribute);
@@ -219,12 +223,8 @@ function extractSVG(svg) {
         return res;
     }
 
-    const elements = extractElements(svg.elements);
-    const attributes = extractAttributes(svg.attributes);
-    return {
-        elements,
-        attributes,
-    };
+    const elements = extractElements(svg.elements, extractAttributes(svg.attributes));
+    return elements;
 }
 
 async function writeSupport(tech, category, components) {
