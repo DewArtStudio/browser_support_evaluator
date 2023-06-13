@@ -1,9 +1,7 @@
-import ELEMENT_TYPES from "../../enums/element-types.js";
-import HTML_ERRORS from "../../enums/errors.js";
-import component from "../info/components.js";
-import DOM from "../components/trees/DOM.js";
-import Loader from "../utilities/loader.js";
-import URL from "../utilities/url.js";
+import ELEMENT_TYPES from "../../../enums/element-types.js";
+import component from "../../info/components.js";
+import DOM from "../../components/trees/DOM.js";
+
 function attributeHandler(element, info) {
     element.attributes.forEach((e, key) => {
         const attr = info.get(key);
@@ -39,10 +37,10 @@ function attributeSVGHandler(element, info) {
 }
 
 /**
- *
- * @param {DOM} dom
+ * Производит заполнение узлов DOM дерева информацией о браузерной поддежки HTML-компонентов
+ * @param {DOM} dom объект DOM дерева
  */
-export default async function DOMHandler(dom, link) {
+export default function fillSupportInfo(dom) {
     const htmlElement = component.html.element;
     const svgElement = component.svg.element;
 
@@ -70,22 +68,4 @@ export default async function DOMHandler(dom, link) {
             }
         }
     }, "deep");
-
-    //Загрузка всех стилей
-    for (let i = 0; i < dom.styles.length; i++) {
-        const e = dom.styles[i];
-        if (e.type === "link") {
-            let url = URL.relativeToAbsolute(e.value, link);
-            console.log(url.url);
-            let res = await Loader.get(url.url);
-            if (res.loaded) {
-                e.type = "text";
-                e.value = res.data;
-            } else {
-                console.log("Ошибка хуяшибка", e.value);
-            }
-        }
-    }
-
-    console.log(dom.styles);
 }

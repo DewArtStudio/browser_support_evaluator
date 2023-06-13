@@ -1,6 +1,6 @@
 import Tree from "./tree.js";
 import Node from "./nodes/node.js";
-import HTML_ERRORS from "../../../enums/errors.js";
+import HTML_ERRORS from "../../../enums/html-errors.js";
 import ELEMENT_TYPES from "../../../enums/element-types.js";
 import component from "../../info/components.js";
 import SELECTOR_TYPES from "../../../enums/selector-types.js";
@@ -202,7 +202,6 @@ export default class DOM extends Tree {
                         e.noindex = true;
                     });
                 }
-
                 if (element.tag.name === "a") {
                     let href = element.attributes.get("href");
                     if (href !== undefined) {
@@ -258,8 +257,11 @@ export default class DOM extends Tree {
                 let rel = element.attributes.get("rel");
                 if (element.tag.name === "link" && !!rel && rel.value === "stylesheet") {
                     const href = element.attributes.get("href");
-                    if (href !== undefined) this.styles.push({ type: "link", value: href.value });
-                    else this.errors.push(HTML_ERRORS.MESSAGE_SELECTOR(element, "Отсутствует атрибут href"));
+                    if (href !== undefined) {
+                        let media = element.attributes.get("media");
+                        if (!!media) media = media.value;
+                        this.styles.push({ type: "link", value: href.value, media: media, element: element });
+                    } else this.errors.push(HTML_ERRORS.MESSAGE_SELECTOR(element, "Отсутствует атрибут href"));
                 }
                 // СБОР СКРИПТОВ
                 if (element.tag.name === "script") {
@@ -294,31 +296,5 @@ export default class DOM extends Tree {
         if (!!manifest) this.manifest.push(manifest);
     }
 
-    querySelector(selector) {
-        let selectorLen = selector.length;
-        let main
-        switch (selector[0].type) {
-            case SELECTOR_TYPES.TAG:
-                main = this.tagMap.get(selector[0].value);
-                break;
-            case SELECTOR_TYPES.ID:
-                main = this.idMap.get(selector[0].value);
-                break;
-            case SELECTOR_TYPES.CLASS:
-                main = this.classMap.get(selector[0].value);
-                break;
-            case SELECTOR_TYPES.ATTRIBUTE:
-                main = this.attributeMap.get(selector[0].value);
-                break;
-        }
-        if (main === undefined) return undefined; // ВЫХОД, ЕСЛИ ГЛАВНОГО СЕЛЕКТОРА НЕ НАЙДЕНО
-        for (let i = 1; i < selectorLen; i++) {
-            let selectorUnit = selector[i];
-            let mainLen = main.length;
-            for (let i = 0; i < mainLen; i++) {
-                let item = selector[i];
-            }
-        }
-        
-    }
+    querySelector(selector) {}
 }
