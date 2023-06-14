@@ -158,6 +158,7 @@ redis.on("error", async () => {
 });
 redis.on("ready", async () => {
     await component._init(redis);
+    console.log(component.browser.get("webview_android"));
 });
 await redis.connect();
 

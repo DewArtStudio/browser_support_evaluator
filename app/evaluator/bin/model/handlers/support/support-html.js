@@ -40,7 +40,7 @@ function attributeSVGHandler(element, info) {
  * Производит заполнение узлов DOM дерева информацией о браузерной поддежки HTML-компонентов
  * @param {DOM} dom объект DOM дерева
  */
-export default function fillSupportInfo(dom) {
+export default function fillSupportHTML(dom) {
     const htmlElement = component.html.element;
     const svgElement = component.svg.element;
 
@@ -68,4 +68,5 @@ export default function fillSupportInfo(dom) {
             }
         }
     }, "deep");
+    return Promise.resolve();
 }

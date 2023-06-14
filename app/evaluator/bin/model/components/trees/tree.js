@@ -9,7 +9,6 @@ export default class Tree {
      */
     constructor(root) {
         this.root = root;
-        this.path = root.link.path;
     }
     /**
      * @type {Node} Корень дерева

@@ -5,11 +5,14 @@ import Url from "url-parse";
 export default class URL {
     static parse(value) {
         let link = new Url(value);
-        if (link.origin === "null") {
+        console.log(link);
+        if (link.origin === "null" && link.protocol === "") {
             link.protocol = "http";
             link = new Url(link);
         }
+
         link.correct = link.origin !== "null";
+        console.log(link);
         return link;
     }
     static merge(base, relative) {

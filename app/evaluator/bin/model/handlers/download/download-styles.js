@@ -41,9 +41,8 @@ export default async function downloadStyles(dom, baseUrl) {
         const style = dom.styles[i];
         if (style.media !== undefined && style.media.trim() !== "")
             style.value = `@media ${style.media} {${style.value}}`;
-        style.value = css.parse(style.value);
-        console.log(style);
     }
+    return Promise.resolve(dom.styles);
 }
 
 async function replaceAsync(string, regexp, replacerFunction) {

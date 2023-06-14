@@ -1,13 +1,6 @@
 /**
  * Оценивает браузерную поддержку веб-страницы
  */
-class Evaluvator {
-    /**
-     * Оценить браузерную поддержку
-     */
-    evaluate(render) {
-        return render;
-    }
+export default function evaluator(render) {
+    return Promise.resolve(228);
 }
-const evaluvator = new Evaluvator();
-

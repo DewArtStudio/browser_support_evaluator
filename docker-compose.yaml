@@ -62,7 +62,7 @@ services:
     # КОНТЕЙНЕР ОБРАБОТЧИКА (+)
     evaluator:
         container_name: ${EVALUATOR_CONTAINER_NAME}
-        hostname: ${EVALUATOR_CONTAINER_NAME}
+        hostname: ${EVALUATOR_HOST}
         build:
             context: ./app/${EVALUATOR_CONTAINER_NAME}
             dockerfile: Dockerfile
@@ -91,6 +91,31 @@ services:
         depends_on:
             - ${COMPONENT_HANDLER_CONTAINER_NAME}
             - ${COMPONENT_DB_CONTAINER_NAME}
+        networks:
+            - app
+    
+    evaluator-bot:
+        container_name: ${EVALUATOR_BOT_CONTAINER_NAME}
+        hostname: ${EVALUATOR_BOT_HOST}
+        build:
+            context: ./app/${EVALUATOR_BOT_CONTAINER_NAME}
+            dockerfile: Dockerfile
+            args:
+                - RUN_MODE=${EVALUATOR_BOT_RUN_MODE}
+        restart: always
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.1"
+                    memory: "200M"
+        environment:
+            - TOKEN=${TOKEN}
+        volumes:
+            - ./app/${EVALUATOR_BOT_CONTAINER_NAME}/bin:/app/bin
+        depends_on:
+            - ${COMPONENT_HANDLER_CONTAINER_NAME}
+            - ${COMPONENT_DB_CONTAINER_NAME}
+            - ${EVALUATOR_CONTAINER_NAME}
         networks:
             - app
 
