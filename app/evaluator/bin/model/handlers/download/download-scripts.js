@@ -1,7 +1,6 @@
 import URL from "../../utilities/url.js";
 import Loader from "../../utilities/loader.js";
 export default async function downloadScripts(dom, baseUrl) {
-    console.log(123);
     //Загрузка всех скриптов
     for (let i = 0; i < dom.scripts.length; i++) {
         const e = dom.scripts[i];

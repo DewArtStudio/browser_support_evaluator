@@ -79,6 +79,7 @@ class ComponentsInfo {
             } while (i--);
             save[saveKey] = mapElements;
         }
+
         /**
          * Инициализирует данные о html-компонентах
          * @param {string} prefix префикс данных
@@ -112,6 +113,42 @@ class ComponentsInfo {
             } while (i--);
             save[saveKey] = mapElements;
         }
+        /**
+         * Встраивает в объекты браузеров информацию о последней версии
+         * @param {Object} browser браузеры
+         */
+        function setBrowsersLatest(browser) {
+            browser.forEach((e, key) => {
+                const keys = Object.keys(e.releases);
+                let versions = [];
+                let i = keys.length - 1;
+                let max = 0;
+                let maxMajor = [];
+                do {
+                    let v = keys[i].toString().split(".");
+                    let major = Number.parseFloat(v[0]);
+                    if (major > max) {
+                        max = major;
+                        maxMajor = [v];
+                    } else {
+                        if (major === max) maxMajor.push(v);
+                    }
+                    versions.push(v);
+                } while (i--);
+                if (maxMajor.length > 1) {
+                    let max = { pos: -1, value: 0 };
+                    for (let i = 0; i < maxMajor.length; i++) {
+                        let tmp = Number.parseInt(maxMajor[i].slice(1).join(""));
+                        if (tmp > max.value) {
+                            max.value = tmp;
+                            max.pos = i;
+                        }
+                    }
+                    maxMajor[0] = maxMajor[max.pos];
+                }
+                e.latest = maxMajor[0].join(".");
+            });
+        }
         const data = {
             htmlElementKeys: await redis.get("#html-element"),
             htmlManifestKeys: await redis.get("#html-manifest"),
@@ -140,6 +177,7 @@ class ComponentsInfo {
         if (!!(await initializeComponents("css-type-", data.cssTypesKeys, this.css, "type"))) return;
         if (!!(await initializeHtmlElements("svg-element-", data.svgElementKeys, this.svg, "element"))) return;
         if (!!(await initializeComponents("browser-", data.browsers, this, "browser"))) return;
+        setBrowsersLatest(this.browser);
         this.isReady = READY_STATUS.READY;
     }
 }
@@ -158,7 +196,6 @@ redis.on("error", async () => {
 });
 redis.on("ready", async () => {
     await component._init(redis);
-    console.log(component.browser.get("webview_android"));
 });
 await redis.connect();
 

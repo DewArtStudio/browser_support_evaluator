@@ -69,10 +69,10 @@ services:
                 - HTTPS_PORT=${EVALUATOR_HTTPS_PORT}
         restart: always
         deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: "200M"
+            # resources:
+            #     limits:
+            #         cpus: "0.25"
+            #         memory: "200M"
         environment:
             - COMPONENT_DB_HOST=${COMPONENT_DB_HOST}
             - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}

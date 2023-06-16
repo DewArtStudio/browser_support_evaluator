@@ -36,12 +36,13 @@ export default async function downloadStyles(dom, baseUrl) {
             }
         }
     }
-
-    for (let i = 0; i < dom.styles.length; i++) {
-        const style = dom.styles[i];
-        if (style.media !== undefined && style.media.trim() !== "")
-            style.value = `@media ${style.media} {${style.value}}`;
-    }
+    // for (let i = 0; i < dom.styles.length; i++) {
+    //     const style = dom.styles[i];
+    //     if (style.media !== undefined && style.media.trim() !== "")
+    //         style.value = `@media ${style.media} {${style.namespace === undefined ? "" : style.namespace.join(" ")}${
+    //             style.charset === undefined ? "" : style.charset.join(" ")
+    //         }${style.value}}`;
+    // }
     return Promise.resolve(dom.styles);
 }
 

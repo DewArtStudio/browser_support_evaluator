@@ -6,8 +6,8 @@ import https from "https";
 import cors from "cors";
 import ready from "./ready.js";
 import READY_STATUS from "../enums/ready-status.js";
-import rateLimit from "express-rate-limit";
-import configs from './configs/configs.js'
+// import rateLimit from "express-rate-limit";
+// import configs from './configs/configs.js'
 
 const HTTP_PORT = process.env.HTTP_PORT || 80;
 const HTTPS_PORT = process.env.HTTPS_PORT || 443;
@@ -22,7 +22,7 @@ app.use(
         optionSuccessStatus: 200,
     })
 );
-app.use(rateLimit(configs.rateLimit));
+// app.use(rateLimit(configs.rateLimit));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use((error, req, res, next) => {
@@ -30,7 +30,7 @@ app.use((error, req, res, next) => {
     res.json();
 });
 http.createServer(app).listen(HTTP_PORT);
-https.createServer(configs.ssl, app).listen(HTTPS_PORT);
+// https.createServer(configs.ssl, app).listen(HTTPS_PORT);
 app.post(`${EVALUATION_REQUEST}-ready`, (req, res) => {
     res.send(JSON.stringify(isReady));
 });

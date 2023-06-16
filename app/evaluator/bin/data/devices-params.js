@@ -14,15 +14,15 @@ const DEVICES_PARAMS = [
         height: 1080,
         orientations: [ORIENTATION.LANDSCAPE, ORIENTATION.PORTRAIT],
     },
-    {
-        width: 2560,
-        height: 1440,
-        orientations: [ORIENTATION.LANDSCAPE, ORIENTATION.PORTRAIT],
-    },
-    {
-        width: 3840,
-        height: 2160,
-        orientations: [ORIENTATION.LANDSCAPE, ORIENTATION.PORTRAIT],
-    },
+    // {
+    //     width: 2560,
+    //     height: 1440,
+    //     orientations: [ORIENTATION.LANDSCAPE, ORIENTATION.PORTRAIT],
+    // },
+    // {
+    //     width: 3840,
+    //     height: 2160,
+    //     orientations: [ORIENTATION.LANDSCAPE, ORIENTATION.PORTRAIT],
+    // },
 ];
 export default DEVICES_PARAMS
