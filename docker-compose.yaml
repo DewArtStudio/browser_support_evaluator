@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-    # ВРЕМЕННЫЙ ВЕБ-СЕРВЕР (+)
+    #  ВЕБ-СЕРВЕР
     web-server:
         container_name: web-server
         build:
@@ -15,8 +15,7 @@ services:
         restart: always
         networks:
             - app
-
-    # БАЗА ДАННЫХ ИНФОРМАЦИИ О ПОДДЕРЖКИ (+)
+    # БАЗА ДАННЫХ ИНФОРМАЦИИ О ПОДДЕРЖКЕ
     component-db:
         container_name: ${COMPONENT_DB_CONTAINER_NAME}
         hostname: ${COMPONENT_DB_HOST}
@@ -38,8 +37,7 @@ services:
             - ./volumes/${COMPONENT_DB_CONTAINER_NAME}:/data
         networks:
             - app
-
-    # ПОЛУЧЕНИЕ ДАННЫХ О БРАУЗЕРНОЙ ПОДДЕРЖКИ (+)
+    # МОДУЛЬ СБОРА ИНФОРМАЦИИ О БРАУЗЕРНОЙ ПОДДЕРЖКЕ
     component-handler:
         container_name: ${COMPONENT_HANDLER_CONTAINER_NAME}
         build:
@@ -58,8 +56,7 @@ services:
             - ${COMPONENT_DB_CONTAINER_NAME}
         networks:
             - app
-
-    # КОНТЕЙНЕР ОБРАБОТЧИКА (+)
+    # МОДУЛЬ ОЦЕНКИ БРАУЗЕРНОЙ ПОДДЕРЖКИ
     evaluator:
         container_name: ${EVALUATOR_CONTAINER_NAME}
         hostname: ${EVALUATOR_HOST}
@@ -71,11 +68,11 @@ services:
                 - HTTP_PORT=${EVALUATOR_HTTP_PORT}
                 - HTTPS_PORT=${EVALUATOR_HTTPS_PORT}
         restart: always
-        # deploy:
-        #     resources:
-        #         limits:
-        #             cpus: "0.25"
-        #             memory: "200M"
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.25"
+                    memory: "200M"
         environment:
             - COMPONENT_DB_HOST=${COMPONENT_DB_HOST}
             - COMPONENT_DB_PASSWORD=${COMPONENT_DB_PASSWORD}
@@ -93,7 +90,7 @@ services:
             - ${COMPONENT_DB_CONTAINER_NAME}
         networks:
             - app
-    
+    # ТЕЛЕГРАМ БОТ
     evaluator-bot:
         container_name: ${EVALUATOR_BOT_CONTAINER_NAME}
         hostname: ${EVALUATOR_BOT_HOST}

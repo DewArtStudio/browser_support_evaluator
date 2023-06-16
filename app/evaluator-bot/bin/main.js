@@ -7,7 +7,7 @@ export default function main() {
         if (/^\/start/g.test(text)) {
             botDemon.sendMessage(
                 message.chat.id,
-                "Введите ссылку и получите информацию о браузерной поддержке Вашего сайта!"
+                "| БОТ ЗАПУЩЕН |\n\nЧтобы получить отчёт о браузерной поддержке страницы Вашего веб-сайта, отправьте боту ссылку на неё"
             );
         } else {
             botDemon.sendMessage(message.chat.id, "Обработка...");
@@ -32,7 +32,7 @@ export default function main() {
 
 function convertResponse(data, url) {
     let res = `| ОТЧЁТ О БРАУЗЕРНОЙ ПОДДЕРЖКЕ |\n\n URL: ${url}\n\n`;
-    res += "Настольные браузеры:\n";
+    res += "====================\nНастольные браузеры:\n====================\n\n";
     res += getLine(data, "Google Chrome", "chrome");
     res += getLine(data, "Yandex Browser", "yandex");
     res += getLine(data, "Safari", "safari");
@@ -41,7 +41,7 @@ function convertResponse(data, url) {
     res += getLine(data, "Microsoft Edge", "edge");
     res += getLine(data, "Internet Explorer", "ie");
     res += getLine(data, "Oculus", "oculus");
-    res += "Мобильные браузеры:\n";
+    res += "====================\nМобильные браузеры:\n====================\n\n";
     res += getLine(data, "Google Chrome for Android", "chrome_android");
     res += getLine(data, "Yandex Browser for Android", "yandex_android");
     res += getLine(data, "Safari for iOS", "safari_ios");
